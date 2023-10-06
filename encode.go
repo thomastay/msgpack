@@ -168,7 +168,7 @@ func (e *Encoder) SetOmitEmpty(on bool) {
 // with two bytes, CC 08. But with sign preservation, it would be encoded as a
 // signed 16 bit with three bytes, D1 00 10
 //
-// This flag does not attempt to preserve size. So an int32 value of 8, would be
+// This flag does not attempt to preserve size. So an int32 value of 8 would be
 // encoded as an int8.
 // This flag also does not apply if the EncodeIntXX functions are used.
 //
@@ -177,7 +177,8 @@ func (e *Encoder) SetOmitEmpty(on bool) {
 // for libraries that must decode a messagepack struct with absolutely no
 // knowledge of the type. If a struct type is provided to the Decoder, the
 // decoder can assign the types properly.
-// Users who use this flag for encoding are recommended to use DecodeInterfaceLossy, which decodes ints into int64, and uints into uint64
+// Users who use this flag for encoding are recommended to use DecodeInterfaceLossy,
+// which decodes ints into int64, and uints into uint64
 func (e *Encoder) SetPreserveSign(on bool) {
 	if on {
 		e.flags |= preserveSignFlag
