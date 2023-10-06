@@ -17,6 +17,7 @@ const (
 	useCompactFloatsFlag
 	useInternedStringsFlag
 	omitEmptyFlag
+	preserveSignFlag
 )
 
 type writer interface {
@@ -155,6 +156,33 @@ func (e *Encoder) SetOmitEmpty(on bool) {
 		e.flags |= omitEmptyFlag
 	} else {
 		e.flags &= ^omitEmptyFlag
+	}
+}
+
+// SetPreserveSign turns on sign preservation
+// This only applies to the encoding of integers when encoding an interface.
+// This causes the encode to encode ints as ints in messagepack, which disables
+// the optimization that ints could be encoded as unsigned ints.
+//
+// For example, the number 128 is currently encoded as an unsigned 8 bit int
+// with two bytes, CC 08. But with sign preservation, it would be encoded as a
+// signed 16 bit with three bytes, D1 00 10
+//
+// This flag does not attempt to preserve size. So an int32 value of 8, would be
+// encoded as an int8.
+// This flag also does not apply if the EncodeIntXX functions are used.
+//
+// Usage:
+// Users are advised to not use this flag in general. It should only be used
+// for libraries that must decode a messagepack struct with absolutely no
+// knowledge of the type. If a struct type is provided to the Decoder, the
+// decoder can assign the types properly.
+// Users who use this flag for encoding are recommended to use DecodeInterfaceLossy, which decodes ints into int64, and uints into uint64
+func (e *Encoder) SetPreserveSign(on bool) {
+	if on {
+		e.flags |= preserveSignFlag
+	} else {
+		e.flags &= ^preserveSignFlag
 	}
 }
 

@@ -124,6 +124,9 @@ func (e *Encoder) EncodeUint(n uint64) error {
 // EncodeNumber encodes an int64 in 1, 2, 3, 5, or 9 bytes.
 // Type of the number is lost during encoding.
 func (e *Encoder) EncodeInt(n int64) error {
+	if e.flags&preserveSignFlag != 0 {
+		return e.encodeIntPreserveSign(n)
+	}
 	if n >= 0 {
 		return e.EncodeUint(uint64(n))
 	}
@@ -137,6 +140,25 @@ func (e *Encoder) EncodeInt(n int64) error {
 		return e.EncodeInt16(int16(n))
 	}
 	if n >= math.MinInt32 {
+		return e.EncodeInt32(int32(n))
+	}
+	return e.EncodeInt64(n)
+}
+
+// Encodes an int64 in 1, 2, 3, 5, or 9 bytes.
+// Always writes it as an integer
+func (e *Encoder) encodeIntPreserveSign(n int64) error {
+	if n >= int64(int8(msgpcode.NegFixedNumLow)) && n <= math.MaxInt8 {
+		// FixedInt
+		return e.w.WriteByte(byte(n))
+	}
+	if n >= math.MinInt8 && n <= math.MaxInt8 {
+		return e.EncodeInt8(int8(n))
+	}
+	if n >= math.MinInt16 && n <= math.MaxInt16 {
+		return e.EncodeInt16(int16(n))
+	}
+	if n >= math.MinInt32 && n <= math.MaxInt64 {
 		return e.EncodeInt32(int32(n))
 	}
 	return e.EncodeInt64(n)
