@@ -159,17 +159,17 @@ func (e *Encoder) SetOmitEmpty(on bool) {
 	}
 }
 
-// SetPreserveSign turns on sign preservation
+// SetPreserveSign turns on sign preservation.
 // This only applies to the encoding of integers when encoding an interface.
-// This causes the encode to encode ints as ints in messagepack, which disables
+// This causes the encoder to encode ints as signed ints, which disables
 // the optimization that ints could be encoded as unsigned ints.
 //
 // For example, the number 128 is currently encoded as an unsigned 8 bit int
 // with two bytes, CC 08. But with sign preservation, it would be encoded as a
 // signed 16 bit with three bytes, D1 00 80
 //
-// This flag does not attempt to preserve size. So an int32 value of 8 would be
-// encoded as an int8.
+// This flag does not attempt to preserve size.
+// So an int32 value of 15 would be encoded as an int8.
 // This flag also does not apply if the EncodeIntXX functions are used.
 //
 // Usage:
