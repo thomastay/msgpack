@@ -158,7 +158,7 @@ func (e *Encoder) encodeIntPreserveSign(n int64) error {
 	if n >= math.MinInt16 && n <= math.MaxInt16 {
 		return e.EncodeInt16(int16(n))
 	}
-	if n >= math.MinInt32 && n <= math.MaxInt64 {
+	if n >= math.MinInt32 && n <= math.MaxInt32 {
 		return e.EncodeInt32(int32(n))
 	}
 	return e.EncodeInt64(n)

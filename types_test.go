@@ -1013,6 +1013,94 @@ func TestInt64(t *testing.T) {
 	}
 }
 
+func TestInt64PreserveSign(t *testing.T) {
+	tests := []struct {
+		in     int64
+		wanted string
+	}{
+		{math.MinInt64, "d38000000000000000"},
+		{math.MinInt32 - 1, "d3ffffffff7fffffff"},
+		{math.MinInt32, "d280000000"},
+		{math.MinInt32 + 1, "d280000001"},
+		{math.MinInt16 - 1, "d2ffff7fff"},
+		{math.MinInt16, "d18000"},
+		{math.MinInt16 + 1, "d18001"},
+		{math.MinInt8 - 1, "d1ff7f"},
+		{math.MinInt8, "d080"},
+		{math.MinInt8 + 1, "d081"},
+		{-33, "d0df"},
+		{-32, "e0"},
+		{-31, "e1"},
+		{-1, "ff"},
+		{0, "00"},
+		{1, "01"},
+		{math.MaxInt8 - 1, "7e"},
+		{math.MaxInt8, "7f"},
+		{math.MaxInt8 + 1, "d10080"},
+		{math.MaxUint8 - 1, "d100fe"},
+		{math.MaxUint8, "d100ff"},
+		{math.MaxUint8 + 1, "d10100"},
+		{math.MaxUint16 - 1, "d20000fffe"},
+		{math.MaxUint16, "d20000ffff"},
+		{math.MaxUint16 + 1, "d200010000"},
+		{math.MaxUint32 - 1, "d300000000fffffffe"},
+		{math.MaxUint32, "d300000000ffffffff"},
+		{math.MaxUint32 + 1, "d30000000100000000"},
+		{math.MaxInt64 - 1, "d37ffffffffffffffe"},
+		{math.MaxInt64, "d37fffffffffffffff"},
+	}
+
+	var buf bytes.Buffer
+	enc := msgpack.NewEncoder(&buf)
+	enc.UseCompactInts(true)
+	enc.SetPreserveSign(true)
+
+	for _, test := range tests {
+		err := enc.Encode(test.in)
+		if err != nil {
+			t.Fatal(err)
+		}
+		s := hex.EncodeToString(buf.Bytes())
+		if s != test.wanted {
+			t.Fatalf("%.32s != %.32s", s, test.wanted)
+		}
+
+		var out int64
+		err = msgpack.Unmarshal(buf.Bytes(), &out)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if out != test.in {
+			t.Fatalf("%d != %d", out, test.in)
+		}
+
+		var out2 uint64
+		err = msgpack.Unmarshal(buf.Bytes(), &out2)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if out2 != uint64(test.in) {
+			t.Fatalf("%d != %d", out2, uint64(test.in))
+		}
+
+		var out3 interface{} = int64(0)
+		err = msgpack.Unmarshal(buf.Bytes(), &out3)
+		if err.Error() != "msgpack: Decode(non-pointer int64)" {
+			t.Fatal(err)
+		}
+
+		dec := msgpack.NewDecoder(&buf)
+		_, err = dec.DecodeInterface()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if buf.Len() != 0 {
+			panic("buffer is not empty")
+		}
+	}
+}
+
 func TestFloat32(t *testing.T) {
 	tests := []struct {
 		in     float32

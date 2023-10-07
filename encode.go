@@ -166,7 +166,7 @@ func (e *Encoder) SetOmitEmpty(on bool) {
 //
 // For example, the number 128 is currently encoded as an unsigned 8 bit int
 // with two bytes, CC 08. But with sign preservation, it would be encoded as a
-// signed 16 bit with three bytes, D1 00 10
+// signed 16 bit with three bytes, D1 00 80
 //
 // This flag does not attempt to preserve size. So an int32 value of 8 would be
 // encoded as an int8.
